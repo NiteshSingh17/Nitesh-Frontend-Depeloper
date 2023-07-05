@@ -1,9 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 .App {
-  text-align: center;
+  min-height: 100vh;
+  color: white;
+  /* color-scheme: dark; */
 }
+
 
 .App-logo {
   height: 40vmin;
@@ -29,6 +33,12 @@
 
 .App-link {
   color: #61dafb;
+}
+
+.gradient-text-1 { 
+  background: linear-gradient(to right, #30CFD0 0%, #330867 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
 }
 
 @keyframes App-logo-spin {
