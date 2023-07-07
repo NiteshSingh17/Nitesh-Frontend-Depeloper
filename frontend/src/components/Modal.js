@@ -7,7 +7,7 @@ export default function Modal(props) {
 
     
     return ( 
-        <div onClick={onClose} className={ 'popupContianer ' + ( isOpen ? 'openPopup' : 'closePopup' ) }>
+        <div data-testid='Modal' onClick={onClose} className={ 'popupContianer ' + ( isOpen ? 'openPopup' : 'closePopup' ) }>
             <div onClick={ e => e.stopPropagation()  } className={'popupBox ' + ('modalSize-' + (size || 'md')) }>
                 {
                     showCloseBt &&

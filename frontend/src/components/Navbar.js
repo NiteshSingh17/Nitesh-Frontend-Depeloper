@@ -6,9 +6,8 @@ export default function Navbar() {
     const toggleNav = useCallback(() => {
         setOpenNav( p => !p )
     },[setOpenNav])
-    console.log("openNav",openNav)
   return (
-      <nav className="bg-black sticky w-full z-20 top-0 left-0">
+      <nav className="bg-black sticky w-full z-20 top-0 left-0 z-50">
         <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
           <a href="/" className="flex items-center">
             <img

@@ -2,7 +2,9 @@ import React from 'react'
 
 export function LgHeading(props) {
     return (
-        <h1 className={'font-bold text-4xl md:text-4xl lg:text-6xl ' +( props.className || '')}>
+        <h1
+        data-testid='LgHeading'
+        className={'font-bold text-4xl md:text-4xl lg:text-6xl ' +( props.className || '')}>
             {
                 props.children
             }
