@@ -2,13 +2,25 @@ import React from 'react'
 import Modal from './Modal'
 import { CAPSULE_STATUS } from '../utils/constants';
 import { ButtonPrimary } from './Buttons';
+import useAppContext from '../providers/AppContext';
 
 export default function FilterModal(props) {
+    const { getCapsules, isCapsuleLoading } = useAppContext()
     const { isOpen, onClose } = props;
-
+    const handleSubmit = e => {
+        e.preventDefault();
+        const filters = {
+            "status" : e.target.capsule_status.value,
+            "original_launch" : e.target.original_launch.value,
+            "type" : e.target.capsule_type.value,
+        }
+        onClose();
+        getCapsules(filters, onClose);
+    }
+    console.log("isOpen", isOpen);
     return (
         <Modal showCloseBt={true} isOpen={isOpen} onClose={onClose}>
-            <div>
+            <form onSubmit={handleSubmit}>
                 <div>
                     <div>
                         <FormInput title='Capsule Type' name='capsule_type'>
@@ -30,11 +42,11 @@ export default function FilterModal(props) {
                             </FormInput>
                         </div>
                         <div className='mt-10'>
-                                <ButtonPrimary className='w-full'>Apply Filters</ButtonPrimary>
+                                <ButtonPrimary isLoading={isCapsuleLoading} type='submit' className='w-full'>Apply Filters</ButtonPrimary>
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </Modal>
     )
 }

@@ -1,17 +1,42 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { LgHeading, MdHeading } from './Headings'
 import Container from './Container'
 import { ButtonOrange, ButtonPrimary, ButtonSecondary } from './Buttons'
 import Modal from './Modal'
 import FilterModal from './FilterModal'
+import useAppContext from '../providers/AppContext'
+import { Loader } from './Loader'
+
+// spacex api not returning max page count so paging on forntend 
+const PAGE_LIMIT = 5;
 
 export default function Capsules() {
     const [ showFilterModal, setShowFilterModal ] = useState(false);
+   
+    const [ curPage, setCurPage ] = useState(1);
+    const { getCapsules, capsules, isCapsuleLoading } = useAppContext()
+    // console.log("capsules",capsules)
+    const pages = useMemo( () => Math.ceil(capsules?.length / PAGE_LIMIT),[capsules]);
 
-    const toggleFilterModal = useCallback( () => {
-        setShowFilterModal( p => !p)
-    } )
+    const filterCapsules = useMemo( () => {return capsules && capsules.slice((curPage - 1) * PAGE_LIMIT, ((curPage -1) * PAGE_LIMIT) +  PAGE_LIMIT)},[curPage, capsules])
+    
+    const showModal = useCallback( () => {
+        setShowFilterModal(true)
+    })
+    const closeModal = useCallback( () => {
+        setShowFilterModal(false)
+    })
 
+    useEffect(  () => {
+        getCapsules();
+    },[]);
+
+    useEffect( () => {
+        setCurPage(1);
+    },[capsules])
+
+    if(isCapsuleLoading ) return <Loader />
+    console.log("showFilterModal",showFilterModal)
     return (
         <Container>
         <div className="flex justify-between mt-6 lg:mt-10">
@@ -20,40 +45,54 @@ export default function Capsules() {
                 <div className='text-slate-300 mt-2'> Lorem Ipsum is simply dummy text of the printing and typesetting industry.</div>
             </div>
             <div>
-                <ButtonSecondary onClick={toggleFilterModal}>Filters</ButtonSecondary>
+                <ButtonSecondary onClick={ showModal }>Filters</ButtonSecondary>
             </div>
         </div>
         <div className='flex flex-wrap mt-8'>
-            <CapsuleCard />
-            <CapsuleCard />
-            <CapsuleCard />
-            <CapsuleCard />
+            {
+                filterCapsules?.map( c => <CapsuleCard key={c.capsule_serial} data={c}/> )
+            }
         </div>
-        <PreAndNextBt />
+        <PreAndNextBt pages={pages} curPage={curPage} setCurPage={setCurPage}/>
         {
             showFilterModal && 
-            <FilterModal isOpen={showFilterModal} onClose={toggleFilterModal}/>
+            <FilterModal isOpen={showFilterModal} onClose={ closeModal }/>
         }
         </Container>
     )
 }
 
-const PreAndNextBt = () => {
+const PreAndNextBt = ({ pages,curPage, setCurPage }) => {
+    const isPrevDisabled = useMemo( () => curPage === 1,[curPage]);
+    const isNextDisabled = useMemo( () => pages && curPage === pages,[curPage, pages]);
+
+    const handleNext = useCallback(() => {
+        setCurPage(  p => p + 1 )
+    },[])
+
+    const handlePre = useCallback(() => {
+        setCurPage(  p => p - 1 )
+    },[])
     return (
         <div >
             <div className='flex justify-end'>
-                <div>
-                    <ButtonOrange>Pre</ButtonOrange>
-                </div>
-                <div className='ml-2'>
-                    <ButtonOrange>Next</ButtonOrange>
-                </div>
+                {
+                    !isPrevDisabled &&
+                    <div>
+                        <ButtonOrange onClick={handlePre}>Pre</ButtonOrange>
+                    </div>
+                }{
+                    !isNextDisabled && 
+                    <div className='ml-2'>
+                        <ButtonOrange onClick={handleNext}>Next</ButtonOrange>
+                    </div>
+                }
             </div>
         </div>
     )
 }
 
-const CapsuleCard = () => {
+const CapsuleCard = ({ data }) => {
 
     const [ openDetailModal, setOpenDetailModal ] = useState(false);
 
@@ -69,20 +108,25 @@ const CapsuleCard = () => {
             <div className='z-20 relative flex flex-col justify-between h-full'>
                 <div>
                     <div>
-                        <h2 className='text-4xl text-slate-800 font-bold'>C101</h2>
+                        <h2 className='text-4xl text-slate-800 font-bold'>{data.capsule_serial}</h2>
                         <div className='text-md text-slate-700'>capsule serial</div>
                     </div>
                     <div className='mt-8'>
-                    <div className='mb-6 text-slate-900 text-xl font-bold'>Reentered after three weeks in orbit</div>
-                    
-                        <div className='flex'>
-                            <div className='mt-1'><CheckSvg /></div>
-                            <div className='text-slate-700 ml-2 font-bold'>retired</div>
-                        </div>
-                        <div className='mt-2 flex'>
-                            <div className='mt-1'><TimeSvg /></div>
-                            <div className='text-slate-700 ml-2 font-bold'>20 May 2020</div>
-                        </div>
+                    <div className='mb-6 text-slate-900 text-xl font-bold'>{data.details}</div>
+                        {
+                            data.status &&
+                            <div className='flex'>
+                                <div className='mt-1'><CheckSvg /></div>
+                                <div className='text-slate-700 ml-2 font-bold'>{data.status}</div>
+                            </div>
+                        }
+                        {
+                            data.original_launch &&
+                            <div className='mt-2 flex'>
+                                <div className='mt-1'><TimeSvg /></div>
+                                <div className='text-slate-700 ml-2 font-bold'>{data.original_launch}</div>
+                            </div>
+                        }
                         </div>
                     
                 </div>
@@ -90,12 +134,13 @@ const CapsuleCard = () => {
                         <ButtonPrimary onClick={ toggleModal }>More Info</ButtonPrimary>
                     </div>
             </div>
-            <CapsuleModalDetail isOpen={openDetailModal} onClose={toggleModal}/>
+            <CapsuleModalDetail data={data} isOpen={openDetailModal} onClose={toggleModal}/>
         </div>
     </div>
 }
 
-const CapsuleModalDetail = ({ isOpen, onClose }) => {
+const CapsuleModalDetail = ({ isOpen, onClose, data }) => {
+    const totalFlights = data?.missions?.reduce( (pre,next) => { pre += next.flight; return pre; },0)
     return (
         <>
             {
@@ -103,25 +148,30 @@ const CapsuleModalDetail = ({ isOpen, onClose }) => {
                 <Modal onClose={onClose} isOpen={isOpen}>
                     <div className="flex justify-between">
                         <div>
-                            <h2 className='text-4xl text-slate-800 font-bold'>C101</h2>
+                            <h2 className='text-4xl text-slate-800 font-bold'>{data.capsule_serial}</h2>
                             <div className='text-md text-slate-700'>capsule serial</div>
                         </div>
                         <div>
-                            <LgHeading className='text-blue-400'>#4</LgHeading>
+                            <LgHeading className='text-blue-400'>#{totalFlights}</LgHeading>
                             <div className='text-slate-400'>Flights</div>
                         </div>
                     </div>
                     <div className='mt-8'>
-                    <div className='mb-6 text-slate-900 text-xl font-bold'>Reentered after three weeks in orbit</div>
-                    
-                        <div className='flex'>
-                            <div className='mt-1'><CheckSvg /></div>
-                            <div className='text-slate-700 ml-2 font-bold'>retired</div>
-                        </div>
-                        <div className='mt-2 flex'>
-                            <div className='mt-1'><TimeSvg /></div>
-                            <div className='text-slate-700 ml-2 font-bold'>20 May 2020</div>
-                        </div>
+                    <div className='mb-6 text-slate-900 text-xl font-bold'>{data.details}</div>
+                        {
+                            data.status &&
+                            <div className='flex'>
+                                <div className='mt-1'><CheckSvg /></div>
+                                <div className='text-slate-700 ml-2 font-bold'>retired</div>
+                            </div>
+                        }
+                        {
+                            data.original_launch &&
+                            <div className='mt-2 flex'>
+                                <div className='mt-1'><TimeSvg /></div>
+                                <div className='text-slate-700 ml-2 font-bold'>{data.original_launch}</div>
+                            </div>
+                        }
                         </div>
                         <ButtonPrimary onClick={onClose} className='w-full mt-8'>Close</ButtonPrimary>
                 </Modal>
