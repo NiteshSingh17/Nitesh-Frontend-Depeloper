@@ -1,0 +1,68 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: linear-gradient(180deg, black, #040523);
+  background-attachment: fixed;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.popupContianer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  padding: 10px 50px;
+  background-color: black;
+  position: fixed;
+  top: 0px;
+  background-color: transparent;
+  backdrop-filter: blur(9px);
+  max-height: 100vh;
+  overflow-y: scroll;
+  left: 0px
+}
+.popupBox{
+  margin: auto;
+  padding: 20px;
+  height: fit-content;
+  background-color: white;
+  box-shadow: 0px 0px 34px -10px rgb(35 27 27 / 27%);
+  border-radius: 15px;
+  transition: all 0.3s;;
+}
+.openPopup{
+  opacity: 1;
+  top: 0px;
+  z-index: 999;
+}
+.closePopup{
+  opacity: 0;
+  top: -20px;
+  z-index: -1;
+}
+.openDrawer{
+  min-width: 300px;
+}
+.closeDrawer{  
+  min-width: 50px;
+}
+
+.modalSize-xm {
+  width: 500px;
+}
+
+.modalSize-md {
+  width: 600px;
+}
+.modalSize-lg {
+  width: 800px;
+}
